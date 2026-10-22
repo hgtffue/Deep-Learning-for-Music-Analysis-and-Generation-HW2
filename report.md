@@ -16,6 +16,7 @@ code/ablation.py    ablation 訓練 / 生成 / 評估流程（ablation_gen.py �
 code/analysis.py    memorization、task b 一致性分析、圖表
 code/make_submission.py  整理上傳雲端硬碟的檔案
 code/pipeline.py    依序執行所有生成 / 訓練 / 評估
+requirements.txt    推論所需套件（torch, transformers, numpy, pretty_midi；轉 wav 另需 pyfluidsynth, soundfile）
 outputs/task_a/<config>/   每組 20 首 32 小節 .mid（+ tokens.json, metrics.csv）
 outputs/task_b/<config>/   3 個 prompt 各自的 8+24 小節 .mid + .wav
 outputs/bonus/<config>/    10 首 16 小節 MELODY+PIANO .mid + .wav + metrics.csv
@@ -23,6 +24,14 @@ outputs/ablation/<name>/   ablation 生成結果
 results/                   各項指標彙整（csv）
 figs/                      報告圖表
 ```
+
+**推論方式**（完整說明見雲端資料夾的 `README.md`）：`pip install -r requirements.txt` 後，在 `code/` 執行
+```
+python generate.py uncond   --ckpt ../checkpoints/basic_loss0.9 --out <輸出資料夾> --n 20 --temp 1.0 --top_p 0.95 --wav
+python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --prompt_dir <prompts/basic-b> --out <輸出資料夾> --temp 1.0 --top_p 0.95 --wav
+python generate.py bonus    --ckpt ../checkpoints/bonus --prompt_dir <prompts/bonus> --out <輸出資料夾> --temp 0.8 --top_k 10 --wav
+```
+`--out` 指定輸出路徑，`--wav` 會同時用 FluidSynth + FluidR3_GM.sf2 輸出試聽用的 .wav。有 GPU 時自動使用，CPU 也可執行（約 30 秒／32 小節）。
 
 ## 1. Token Representation
 
@@ -84,7 +93,7 @@ validation loss 在約 9k 步最低，之後開始 overfit。
 
 ![loss curves](figs/loss_curves.png)
 
-（左圖虛線為第 7 節 ablation 模型的 validation loss。）
+（虛線為第 7 節 ablation 模型的 validation loss。）
 
 ### 推論（Inference）
 
@@ -146,7 +155,7 @@ a4/a5 使用的是 overfit 之後的 checkpoint，因此檢查生成曲是否直
 
 ## 5. Basic Task b – Prompt Continuation（8 + 24 小節）
 
-使用 task a 的 checkpoint（train loss 1.20 / best val），不重新訓練。將 prompt 用相同方式 tokenize（同樣使用 prompt 提供的 `beat_midi.txt` / `chord_midi.txt`），以此為前綴續寫，直到總共 32 小節。
+使用 task a 的 checkpoint（train loss 1.20，step 8855，接近 validation loss 最低點），不重新訓練。選它而不是 task a 表現最好的 loss 0.90 checkpoint，是因為 prompt 來自模型沒看過的歌曲，續寫更需要泛化能力；loss 0.90 的模型（step 19251）已經明顯 overfit（val loss 約 1.47，最低點是 1.29）。將 prompt 用相同方式 tokenize（同樣使用 prompt 提供的 `beat_midi.txt` / `chord_midi.txt`），以此為前綴續寫，直到總共 32 小節。
 
 | Config | Model | Representation | Checkpoint | Temperature | Top-K | Top-p |
 |---|---|---|---|---|---|---|

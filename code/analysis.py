@@ -218,6 +218,10 @@ def figs():
             _, va = read_log(ROOT / "ckpt" / d / "log.txt")
             ax[0].plot(list(va), list(va.values()), "x:", ms=3, lw=0.8, label=f"val, {lbl}")
     ax[0].legend(fontsize=7)
+    if (ROOT / "ckpt/abl_bonus_nochord/log.txt").exists():
+        _, va = read_log(ROOT / "ckpt/abl_bonus_nochord/log.txt")
+        ax[1].plot(list(va), list(va.values()), "x:", ms=3, lw=0.8, label="val, melody only (no chord)")
+        ax[1].legend(fontsize=7)
     fig.tight_layout(); fig.savefig(FIG / "loss_curves.png", dpi=150); plt.close(fig)
 
     s = pd.read_csv(RES / "task_a_summary.csv")
