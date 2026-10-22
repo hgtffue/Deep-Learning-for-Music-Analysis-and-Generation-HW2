@@ -36,6 +36,10 @@ for f in sorted((ROOT / "outputs/bonus" / BONUS).glob("*.*")):
     if f.suffix in (".mid", ".wav"):
         copy(f, SUB / "results/bonus" / f.name)
 copy(ROOT / "submission_README.md", SUB / "README.md")
+copy(ROOT / "requirements.txt", SUB / "requirements.txt")
+# third-party, not pip-installable: soundfont (MIT licence) + FluidSynth Windows build, for --wav rendering
+copy(ROOT / "tools/sf/FluidR3_GM.sf2", SUB / "tools/sf/FluidR3_GM.sf2")
+shutil.copytree(ROOT / "tools/fs", SUB / "tools/fs")
 n = sum(1 for _ in SUB.rglob("*") if _.is_file())
 size = sum(f.stat().st_size for f in SUB.rglob("*") if f.is_file()) / 2 ** 20
 print(f"{n} files, {size:.0f} MB in {SUB}")

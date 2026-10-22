@@ -4,6 +4,7 @@ Inference for the three tasks.
 Unconditional (task a):   python generate.py uncond   --ckpt ../ckpt/basic/last --out ../outputs/task_a/<cfg> --n 20 --temp 1.0 --top_p 0.95
 Continuation (task b):    python generate.py continue --ckpt ../ckpt/basic/last --out ../outputs/task_b/<cfg> --temp 1.0 --top_k 10
 Accompaniment (bonus):    python generate.py bonus    --ckpt ../ckpt/bonus/last --out ../outputs/bonus/<cfg> --temp 1.0 --top_p 0.9
+Add --wav to also render .wav files (needs FluidSynth + a General MIDI soundfont, see render.py).
 """
 import argparse
 import json
@@ -32,7 +33,7 @@ def group_ids(prefix):
 G = {k: group_ids(k) for k in ["Pitch_", "Vel_", "Dur_", "TS_", "Tempo_", "Pos_", "Chord_"]}
 
 
-DEV = "cuda"
+DEV = os.environ.get("HW2_DEVICE") or ("cuda" if torch.cuda.is_available() and torch.cuda.device_count() > 0 else "cpu")
 
 
 def mask_of(ids):
@@ -112,7 +113,7 @@ def sample_logits(logits, temp, top_k, top_p):
 
 
 class Generator:
-    def __init__(self, ckpt, device="cuda"):
+    def __init__(self, ckpt, device=DEV):
         self.model = GPT2LMHeadModel.from_pretrained(ckpt).to(device).eval()
         self.ctx = self.model.config.n_positions
         self.dev = device
@@ -141,7 +142,7 @@ class Generator:
         new = window[self.fed:]
         x = torch.tensor([new], device=self.dev)
         pos = torch.arange(self.fed, self.fed + len(new), device=self.dev)[None]
-        with torch.autocast("cuda", dtype=torch.bfloat16):
+        with torch.autocast(DEV, dtype=torch.bfloat16, enabled=DEV == "cuda"):
             out = self.model(input_ids=x, past_key_values=self.past, position_ids=pos, use_cache=True)
         self.past = out.past_key_values
         self.fed = len(window)
@@ -217,6 +218,7 @@ def main():
     ap.add_argument("--top_p", type=float, default=1.0)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--prompt_dir", default=None)
+    ap.add_argument("--wav", action="store_true", help="also render every generated .mid to .wav (FluidSynth)")
     ap.add_argument("--no_chord", action="store_true", help="bonus: drop chord tokens from the condition")
     args = ap.parse_args()
 
@@ -268,6 +270,11 @@ def main():
             print(d.name, len(song["bars"]), "bars,", len(piano.notes), "piano notes", flush=True)
 
     json.dump(results, open(out / "tokens.json", "w"))
+    if args.wav:
+        from render import render_midi
+        for mid in sorted(out.glob("*.mid")):
+            render_midi(mid, mid.with_suffix(".wav"))
+            print("rendered", mid.with_suffix(".wav"), flush=True)
 
 
 if __name__ == "__main__":

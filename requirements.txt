@@ -1,0 +1,8 @@
+# inference (generate.py)
+torch>=2.1
+transformers==4.57.3
+numpy
+pretty_midi>=0.2.10
+# .mid -> .wav rendering (generate.py --wav / render.py); also needs the FluidSynth library, see README
+pyfluidsynth==1.4.0
+soundfile
