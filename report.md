@@ -2,7 +2,7 @@
 
 **程式碼（GitHub）：https://github.com/hgtffue/Deep-Learning-for-Music-Analysis-and-Generation-HW2**
 
-**模型與生成結果（雲端硬碟）：TODO 貼上連結**
+**模型與生成結果（雲端硬碟）：https://drive.google.com/drive/folders/1DtMPrHbmGz7sVhg6q9yqqLGSFMj-gofX**
 
 ## 0. 程式與輸出結構
 
@@ -17,6 +17,9 @@ code/midilike.py    MIDI-like 表示法（ablation 用）
 code/ablation.py    ablation 訓練 / 生成 / 評估流程（ablation_gen.py 為其生成程式）
 code/analysis.py    memorization、task b 一致性分析、圖表
 code/make_submission.py  整理上傳雲端硬碟的檔案
+code/download.py    用 gdown 從雲端硬碟下載 checkpoints/、tools/
+code/demo.py        下載（若缺）＋三個任務的簡單推論，輸出試聽樣本
+prompts/            作業提供的 task b / bonus prompt
 code/pipeline.py    依序執行所有生成 / 訓練 / 評估
 requirements.txt    所有使用到的套件（含版本）
 outputs/task_a/<config>/   每組 20 首 32 小節 .mid（+ tokens.json, metrics.csv）
@@ -27,11 +30,16 @@ results/                   各項指標彙整（csv）
 figs/                      報告圖表
 ```
 
-**推論方式**（完整說明見雲端資料夾的 `README.md`）：clone GitHub repo、將雲端的 `checkpoints/`、`tools/` 放到 repo 根目錄，`pip install -r requirements.txt` 後在 `code/` 執行
+**推論方式**（完整說明見 `README.md`）：clone GitHub repo，`pip install -r requirements.txt` 後在 `code/` 執行
+```
+python download.py                  # gdown 下載 checkpoints/、tools/ 到 repo 根目錄
+python demo.py --out <輸出資料夾>     # 一鍵產生 task a / b / bonus 試聽樣本（.mid + .wav）
+```
+或分別執行（`--prompt_dir` 省略時使用 repo 內的 `prompts/`）：
 ```
 python generate.py uncond   --ckpt ../checkpoints/basic_loss0.9 --out <輸出資料夾> --n 20 --temp 1.0 --top_p 0.95 --wav
-python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --prompt_dir <prompts/basic-b> --out <輸出資料夾> --temp 1.0 --top_p 0.95 --wav
-python generate.py bonus    --ckpt ../checkpoints/bonus --prompt_dir <prompts/bonus> --out <輸出資料夾> --temp 0.8 --top_k 10 --wav
+python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --out <輸出資料夾> --temp 1.0 --top_p 0.95 --wav
+python generate.py bonus    --ckpt ../checkpoints/bonus --out <輸出資料夾> --temp 0.8 --top_k 10 --wav
 ```
 `--out` 指定輸出路徑，`--wav` 會同時用 FluidSynth + FluidR3_GM.sf2 輸出試聽用的 .wav。需要 CUDA GPU。
 

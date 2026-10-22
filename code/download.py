@@ -8,6 +8,7 @@ Files that already exist are skipped.
 """
 import argparse
 import pathlib
+import time
 
 import gdown
 
@@ -25,13 +26,20 @@ def main():
     files = gdown.download_folder(FOLDER, skip_download=True, quiet=True)
     for f in files:
         parts = pathlib.PureWindowsPath(f.path).parts[1:]       # drop the drive folder's own name
-        if not parts or parts[0] not in want:
+        if not parts or parts[0] not in want or {"include", "lib"} & set(parts):  # FluidSynth headers: not needed
             continue
         dst = pathlib.Path(args.dest, *parts)
         if dst.exists():
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
-        gdown.download(id=f.id, output=str(dst), quiet=True)
+        for attempt in range(5):                                  # Drive occasionally refuses a request
+            try:
+                gdown.download(id=f.id, output=str(dst), quiet=True)
+                break
+            except gdown.exceptions.FileURLRetrievalError:
+                if attempt == 4:
+                    raise
+                time.sleep(5 * (attempt + 1))
         print(dst.relative_to(args.dest), flush=True)
     print("done")
 

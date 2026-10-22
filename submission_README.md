@@ -21,19 +21,21 @@ results/                 the submitted generation results
   bonus/                 001–010 .mid + .wav: MELODY (given) + generated PIANO, 16 bars
 ```
 
-## 1. Installation
+## 1. Installation and quick start
 
 ```
 git clone https://github.com/hgtffue/Deep-Learning-for-Music-Analysis-and-Generation-HW2.git hw2
-```
-Copy `checkpoints/` and `tools/` from this cloud folder into the cloned `hw2/` folder, so that it contains
-`code/`, `checkpoints/`, `tools/`. Then (Python 3.13, CUDA GPU required):
-```
 cd hw2
 pip install -r requirements.txt
+cd code
+python download.py                 # gdown: checkpoints/ and tools/ from this cloud folder -> repo root
+python demo.py --out ../demo_out   # listening samples: task a (2 pieces), task b (3 prompts, b1), bonus (10 songs, c2)
 ```
-If pip installs a CPU-only PyTorch, install the CUDA build first:
+Python 3.13, CUDA GPU required. If pip installs a CPU-only PyTorch, install the CUDA build first:
 `pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cu128`.
+`download.py` skips files that already exist (`--results` also downloads the submitted results).
+Alternatively, copy `checkpoints/` and `tools/` from this cloud folder into the cloned `hw2/` folder by hand.
+The task b / bonus prompts of the homework are included in the repo under `prompts/`.
 
 **For `.wav` output (`--wav`)**: pyfluidsynth needs the FluidSynth shared library, which is not pip-installable.
 - Windows: nothing to do – the FluidSynth build in `tools/fs` is picked up automatically.
@@ -59,13 +61,13 @@ python generate.py uncond --ckpt ../checkpoints/basic_loss0.9 --out ../out/task_
 
 ### Task b – continuation (8-bar prompt + 24 bars)
 
-`--prompt_dir` is a folder with one sub-folder per prompt, each containing `<id>.mid`, `beat_midi.txt`
-and `chord_midi.txt` (i.e. `POP909/prompts/basic-b` from the homework). The three configurations:
+`--prompt_dir` (default: `prompts/basic-b` in the repo) is a folder with one sub-folder per prompt, each containing
+`<id>.mid`, `beat_midi.txt` and `chord_midi.txt`. The three configurations:
 
 ```
-python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --prompt_dir <path>/prompts/basic-b --out ../out/task_b/b1 --temp 1.0 --top_p 0.95 --wav
-python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --prompt_dir <path>/prompts/basic-b --out ../out/task_b/b2 --temp 0.8 --top_k 10 --wav
-python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --prompt_dir <path>/prompts/basic-b --out ../out/task_b/b3 --temp 1.2 --top_p 0.98 --wav
+python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --out ../out/task_b/b1 --temp 1.0 --top_p 0.95 --wav
+python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --out ../out/task_b/b2 --temp 0.8 --top_k 10 --wav
+python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --out ../out/task_b/b3 --temp 1.2 --top_p 0.98 --wav
 ```
 
 | Config | Temperature | Top-k | Top-p |
@@ -84,14 +86,12 @@ python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --prompt_dir <pa
 
 ### Bonus – piano accompaniment for a melody (16 bars)
 
-`--prompt_dir` contains one sub-folder per song with `melody.mid`, `beat_midi.txt`, `chord_midi.txt`
-(i.e. `POP909/prompts/bonus`). The output `.mid` has the given MELODY track and the generated PIANO track.
+`--prompt_dir` (default: `prompts/bonus` in the repo) contains one sub-folder per song with `melody.mid`,
+`beat_midi.txt`, `chord_midi.txt`. The output `.mid` has the given MELODY track and the generated PIANO track.
 
 ```
-python generate.py bonus --ckpt ../checkpoints/bonus --prompt_dir <path>/prompts/bonus --out ../out/bonus --temp 0.8 --top_k 10 --wav
+python generate.py bonus --ckpt ../checkpoints/bonus --out ../out/bonus --temp 0.8 --top_k 10 --wav
 ```
-
-If `--prompt_dir` is omitted, `POP909/prompts/basic-b` resp. `POP909/prompts/bonus` next to `code/` is used.
 
 ### Rendering existing MIDI files
 

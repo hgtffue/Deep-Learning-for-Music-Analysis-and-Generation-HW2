@@ -6,7 +6,18 @@ Not included in the repo (size / licensing): `POP909/` (dataset), `ckpt/` (model
 `data/*.json` except `tok2idx.json` (rebuilt by `music_tok.py`), `.wav` files, `tools/`
 (FluidSynth + FluidR3_GM.sf2), `HW2_scripts/MusDr`.
 
-## Setup
+## Inference
+
+```
+pip install -r requirements.txt
+cd code
+python download.py                 # checkpoints/ + tools/ from Google Drive (gdown)
+python demo.py --out ../demo_out   # listening samples for task a / b / bonus
+```
+Details: [submission_README.md](submission_README.md) (the README of the cloud folder).
+Cloud folder: https://drive.google.com/drive/folders/1DtMPrHbmGz7sVhg6q9yqqLGSFMj-gofX
+
+## Setup (training / evaluation)
 
 ```
 git clone https://github.com/slSeanWU/MusDr HW2_scripts/MusDr
