@@ -5,9 +5,11 @@ the POP909 training set, REMI tokens with chord / tempo / meter tokens. Details 
 
 ## Folder structure
 
+Source code is on GitHub: https://github.com/hgtffue/Deep-Learning-for-Music-Analysis-and-Generation-HW2
+This cloud folder contains the model checkpoints, rendering tools and the submitted results:
+
 ```
 README.md, requirements.txt
-code/                    source code (inference: generate.py, render.py, music_tok.py)
 checkpoints/
   basic_loss0.9/         task a model (train loss 0.90) – used for the submitted task a results
   basic_loss1.2/         task b model (train loss 1.20, best validation loss)
@@ -22,17 +24,22 @@ results/                 the submitted generation results
 ## 1. Installation
 
 ```
+git clone https://github.com/hgtffue/Deep-Learning-for-Music-Analysis-and-Generation-HW2.git hw2
+```
+Copy `checkpoints/` and `tools/` from this cloud folder into the cloned `hw2/` folder, so that it contains
+`code/`, `checkpoints/`, `tools/`. Then (Python 3.13, CUDA GPU required):
+```
+cd hw2
 pip install -r requirements.txt
 ```
-A CUDA GPU is used automatically if available; CPU also works (slower, roughly 1–2 min per 32-bar piece).
-For a CUDA build of PyTorch follow https://pytorch.org/get-started/locally/ if the default wheel is CPU-only.
+If pip installs a CPU-only PyTorch, install the CUDA build first:
+`pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cu128`.
 
-**Only for `.wav` output (`--wav`)**: pyfluidsynth needs the FluidSynth shared library, which is not pip-installable.
+**For `.wav` output (`--wav`)**: pyfluidsynth needs the FluidSynth shared library, which is not pip-installable.
 - Windows: nothing to do – the FluidSynth build in `tools/fs` is picked up automatically.
 - Linux: `sudo apt install fluidsynth`  ·  macOS: `brew install fluid-synth`
 
-The soundfont `tools/sf/FluidR3_GM.sf2` is included (another path can be given with the `SF2_PATH` environment variable).
-Without FluidSynth, everything still works without `--wav` (only `.mid` files are written).
+The soundfont `tools/sf/FluidR3_GM.sf2` is used (another path can be given with the `SF2_PATH` environment variable).
 
 On Windows, if you see `OMP: Error #15 ... libiomp5md.dll`, set `KMP_DUPLICATE_LIB_OK=TRUE`
 (generate.py already sets it).
@@ -101,4 +108,4 @@ python train.py --data ../data/basic_sequences.json --out ../ckpt/basic --batch 
 python train.py --data ../data/bonus_sequences.json --out ../ckpt/bonus --batch 8 --steps 12000 --save_losses ""
 ```
 Evaluation / analysis scripts (`summarize.py`, `si_eval.py`, `ablation.py`, `analysis.py`) additionally need
-the homework's `HW2_scripts` (eval_basic.py, eval_bonus.py, MusDr), pandas, librosa and matplotlib.
+the homework's `HW2_scripts` (eval_basic.py, eval_bonus.py, MusDr).

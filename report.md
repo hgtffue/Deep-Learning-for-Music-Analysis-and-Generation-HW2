@@ -1,6 +1,8 @@
 # HW2 – Symbolic Music Generation
 
-**程式碼與模型（雲端硬碟）：TODO 貼上連結**　　GitHub：https://github.com/hgtffue/Deep-Learning-for-Music-Analysis-and-Generation-HW2
+**程式碼（GitHub）：https://github.com/hgtffue/Deep-Learning-for-Music-Analysis-and-Generation-HW2**
+
+**模型與生成結果（雲端硬碟）：TODO 貼上連結**
 
 ## 0. 程式與輸出結構
 
@@ -16,7 +18,7 @@ code/ablation.py    ablation 訓練 / 生成 / 評估流程（ablation_gen.py �
 code/analysis.py    memorization、task b 一致性分析、圖表
 code/make_submission.py  整理上傳雲端硬碟的檔案
 code/pipeline.py    依序執行所有生成 / 訓練 / 評估
-requirements.txt    推論所需套件（torch, transformers, numpy, pretty_midi；轉 wav 另需 pyfluidsynth, soundfile）
+requirements.txt    所有使用到的套件（含版本）
 outputs/task_a/<config>/   每組 20 首 32 小節 .mid（+ tokens.json, metrics.csv）
 outputs/task_b/<config>/   3 個 prompt 各自的 8+24 小節 .mid + .wav
 outputs/bonus/<config>/    10 首 16 小節 MELODY+PIANO .mid + .wav + metrics.csv
@@ -25,13 +27,13 @@ results/                   各項指標彙整（csv）
 figs/                      報告圖表
 ```
 
-**推論方式**（完整說明見雲端資料夾的 `README.md`）：`pip install -r requirements.txt` 後，在 `code/` 執行
+**推論方式**（完整說明見雲端資料夾的 `README.md`）：clone GitHub repo、將雲端的 `checkpoints/`、`tools/` 放到 repo 根目錄，`pip install -r requirements.txt` 後在 `code/` 執行
 ```
 python generate.py uncond   --ckpt ../checkpoints/basic_loss0.9 --out <輸出資料夾> --n 20 --temp 1.0 --top_p 0.95 --wav
 python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --prompt_dir <prompts/basic-b> --out <輸出資料夾> --temp 1.0 --top_p 0.95 --wav
 python generate.py bonus    --ckpt ../checkpoints/bonus --prompt_dir <prompts/bonus> --out <輸出資料夾> --temp 0.8 --top_k 10 --wav
 ```
-`--out` 指定輸出路徑，`--wav` 會同時用 FluidSynth + FluidR3_GM.sf2 輸出試聽用的 .wav。有 GPU 時自動使用，CPU 也可執行（約 30 秒／32 小節）。
+`--out` 指定輸出路徑，`--wav` 會同時用 FluidSynth + FluidR3_GM.sf2 輸出試聽用的 .wav。需要 CUDA GPU。
 
 ## 1. Token Representation
 

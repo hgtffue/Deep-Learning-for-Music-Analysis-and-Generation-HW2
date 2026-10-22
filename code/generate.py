@@ -33,7 +33,7 @@ def group_ids(prefix):
 G = {k: group_ids(k) for k in ["Pitch_", "Vel_", "Dur_", "TS_", "Tempo_", "Pos_", "Chord_"]}
 
 
-DEV = os.environ.get("HW2_DEVICE") or ("cuda" if torch.cuda.is_available() and torch.cuda.device_count() > 0 else "cpu")
+DEV = "cuda"
 
 
 def mask_of(ids):
@@ -142,7 +142,7 @@ class Generator:
         new = window[self.fed:]
         x = torch.tensor([new], device=self.dev)
         pos = torch.arange(self.fed, self.fed + len(new), device=self.dev)[None]
-        with torch.autocast(DEV, dtype=torch.bfloat16, enabled=DEV == "cuda"):
+        with torch.autocast(DEV, dtype=torch.bfloat16):
             out = self.model(input_ids=x, past_key_values=self.past, position_ids=pos, use_cache=True)
         self.past = out.past_key_values
         self.fed = len(window)

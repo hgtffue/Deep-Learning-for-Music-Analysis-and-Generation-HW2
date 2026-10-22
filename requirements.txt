@@ -1,8 +1,14 @@
-# inference (generate.py)
-torch>=2.1
+# Python 3.13, CUDA GPU required (PyTorch CUDA 12.8 build: pip install torch --index-url https://download.pytorch.org/whl/cu128)
+torch==2.11.0
 transformers==4.57.3
-numpy
-pretty_midi>=0.2.10
-# .mid -> .wav rendering (generate.py --wav / render.py); also needs the FluidSynth library, see README
+safetensors==0.6.2
+accelerate==1.15.0
+numpy==2.2.6
+pretty_midi==0.2.11.post0
 pyfluidsynth==1.4.0
-soundfile
+soundfile==0.14.0
+pandas==3.0.3
+scipy==1.16.2
+librosa==1.0.0
+matplotlib==3.10.7
+tqdm==4.67.1

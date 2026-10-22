@@ -1,4 +1,4 @@
-"""Collect everything that goes to the cloud drive into ../submission (code, checkpoints, results)."""
+"""Collect everything that goes to the cloud drive into ../submission (checkpoints, results; code is on GitHub)."""
 import pathlib
 import shutil
 
@@ -19,8 +19,6 @@ def copy(src, dst):
 
 
 shutil.rmtree(SUB, ignore_errors=True)
-for f in sorted((ROOT / "code").glob("*.py")):
-    copy(f, SUB / "code" / f.name)
 for name, src in CKPTS.items():
     for f in ["config.json", "generation_config.json", "model.safetensors"]:
         copy(ROOT / "ckpt" / src / f, SUB / "checkpoints" / name / f)
