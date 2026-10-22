@@ -1,0 +1,12 @@
+{
+ "mode": "bonus",
+ "ckpt": "C:\\Users\\toby\\115-1\\music\\hw2\\ckpt\\bonus\\best_val",
+ "out": "C:\\Users\\toby\\115-1\\music\\hw2\\outputs\\bonus\\c1_t1.0_p0.9",
+ "n": 20,
+ "bars": 32,
+ "temp": 1.0,
+ "top_k": 0,
+ "top_p": 0.9,
+ "seed": 0,
+ "prompt_dir": null
+}

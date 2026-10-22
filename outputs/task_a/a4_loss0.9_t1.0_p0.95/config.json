@@ -1,0 +1,12 @@
+{
+ "mode": "uncond",
+ "ckpt": "C:\\Users\\toby\\115-1\\music\\hw2\\ckpt\\basic\\loss_0.9",
+ "out": "C:\\Users\\toby\\115-1\\music\\hw2\\outputs\\task_a\\a4_loss0.9_t1.0_p0.95",
+ "n": 20,
+ "bars": 32,
+ "temp": 1.0,
+ "top_k": 0,
+ "top_p": 0.95,
+ "seed": 0,
+ "prompt_dir": null
+}

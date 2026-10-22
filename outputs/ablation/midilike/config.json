@@ -1,0 +1,13 @@
+{
+ "ckpt": "C:\\Users\\toby\\115-1\\music\\hw2\\ckpt\\abl_midilike\\last",
+ "out": "C:\\Users\\toby\\115-1\\music\\hw2\\outputs\\ablation\\midilike",
+ "n": 20,
+ "bars": 32,
+ "temp": 1.0,
+ "top_k": 0,
+ "top_p": 0.95,
+ "seed": 0,
+ "no_chord": false,
+ "no_constraint": false,
+ "midilike": true
+}

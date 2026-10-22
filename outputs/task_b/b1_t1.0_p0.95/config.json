@@ -1,0 +1,12 @@
+{
+ "mode": "continue",
+ "ckpt": "C:\\Users\\toby\\115-1\\music\\hw2\\ckpt\\basic\\loss_1.2",
+ "out": "C:\\Users\\toby\\115-1\\music\\hw2\\outputs\\task_b\\b1_t1.0_p0.95",
+ "n": 20,
+ "bars": 32,
+ "temp": 1.0,
+ "top_k": 0,
+ "top_p": 0.95,
+ "seed": 0,
+ "prompt_dir": null
+}

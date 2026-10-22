@@ -1,0 +1,122 @@
+[
+ {
+  "song_name": "uncond_00",
+  "tokens": 3641,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_01",
+  "tokens": 2785,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_02",
+  "tokens": 2614,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_03",
+  "tokens": 3872,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_04",
+  "tokens": 2449,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_05",
+  "tokens": 2609,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_06",
+  "tokens": 2236,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_07",
+  "tokens": 3180,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_08",
+  "tokens": 3267,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_09",
+  "tokens": 2153,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_10",
+  "tokens": 3149,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_11",
+  "tokens": 2643,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_12",
+  "tokens": 4107,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_13",
+  "tokens": 4183,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_14",
+  "tokens": 2458,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_15",
+  "tokens": 2605,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_16",
+  "tokens": 3051,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_17",
+  "tokens": 2736,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_18",
+  "tokens": 3554,
+  "bars": 32,
+  "grammar_ok": 1.0
+ },
+ {
+  "song_name": "uncond_19",
+  "tokens": 1843,
+  "bars": 32,
+  "grammar_ok": 1.0
+ }
+]

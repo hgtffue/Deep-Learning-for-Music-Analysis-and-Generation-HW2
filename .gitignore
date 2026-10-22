@@ -1,0 +1,22 @@
+# dataset (not redistributed)
+POP909/
+
+# large / generated artifacts (exceed GitHub file-size limits)
+ckpt/
+tools/
+data/*
+!data/tok2idx.json
+*.wav
+results/si/audio/
+results/si/ssm/
+results/si/scplot/
+results/si/todo/
+results/si/real_mid/
+logs/
+
+# third-party repo cloned separately (see README)
+HW2_scripts/MusDr/
+
+.vscode/
+__pycache__/
+*.pyc
