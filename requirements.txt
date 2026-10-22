@@ -12,3 +12,4 @@ scipy==1.16.2
 librosa==1.0.0
 matplotlib==3.10.7
 tqdm==4.67.1
+gdown==5.2.0

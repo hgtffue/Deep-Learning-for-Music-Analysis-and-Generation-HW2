@@ -23,3 +23,8 @@ __pycache__/
 
 # cloud-drive submission bundle (built by code/make_submission.py)
 submission/
+/checkpoints/
+/demo_out/
+/results/task_a/
+/results/task_b/
+/results/bonus/

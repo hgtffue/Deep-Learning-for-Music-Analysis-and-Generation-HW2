@@ -24,6 +24,7 @@ import music_tok as mt
 T = mt.TOK2IDX
 V = mt.VOCAB_SIZE
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+PROMPTS = ROOT / "prompts" if (ROOT / "prompts").exists() else ROOT / "POP909/prompts"  # homework test prompts
 
 
 def group_ids(prefix):
@@ -237,7 +238,7 @@ def main():
             print(name, len(toks), "tokens", count_bars([T[t] for t in toks]), "bars", flush=True)
 
     elif args.mode == "continue":
-        pdir = pathlib.Path(args.prompt_dir or ROOT / "POP909/prompts/basic-b")
+        pdir = pathlib.Path(args.prompt_dir or PROMPTS / "basic-b")
         for d in sorted(p for p in pdir.iterdir() if p.is_dir()):
             tracks = midi_tracks(d / f"{d.name}.mid")
             song = mt.parse_song(tracks, d / "beat_midi.txt", d / "chord_midi.txt")
@@ -250,7 +251,7 @@ def main():
             print(d.name, "prompt bars", n_prompt, "total tokens", len(toks), flush=True)
 
     else:
-        pdir = pathlib.Path(args.prompt_dir or ROOT / "POP909/prompts/bonus")
+        pdir = pathlib.Path(args.prompt_dir or PROMPTS / "bonus")
         for d in sorted(p for p in pdir.iterdir() if p.is_dir()):
             mel = midi_tracks(d / "melody.mid")
             mel_notes = mel.get("MELODY", next(iter(mel.values())))
