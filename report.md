@@ -9,10 +9,17 @@ code/generate.py    推論：uncond（task a）、continue（task b）、bonus�
 code/render.py      FluidSynth + FluidR3_GM.sf2 轉 .wav
 code/summarize.py   對 task a 各組設定跑 eval_basic.py 並彙整表格
 code/si_eval.py     task a 的 SI（MusDr scape plot）計算
+code/midilike.py    MIDI-like 表示法（ablation 用）
+code/ablation.py    ablation 訓練 / 生成 / 評估流程（ablation_gen.py 為其生成程式）
+code/analysis.py    memorization、task b 一致性分析、圖表
+code/make_submission.py  整理上傳雲端硬碟的檔案
 code/pipeline.py    依序執行所有生成 / 訓練 / 評估
 outputs/task_a/<config>/   每組 20 首 32 小節 .mid（+ tokens.json, metrics.csv）
 outputs/task_b/<config>/   3 個 prompt 各自的 8+24 小節 .mid + .wav
 outputs/bonus/<config>/    10 首 16 小節 MELODY+PIANO .mid + .wav + metrics.csv
+outputs/ablation/<name>/   ablation 生成結果
+results/                   各項指標彙整（csv）
+figs/                      報告圖表
 ```
 
 ## 1. Token Representation
@@ -73,6 +80,10 @@ Basic 模型 loss 曲線（摘要）：
 
 validation loss 在約 9k 步最低，之後開始 overfit。
 
+![loss curves](figs/loss_curves.png)
+
+（左圖虛線為第 7 節 ablation 模型的 validation loss。）
+
 ### 推論（Inference）
 
 - 自回歸取樣，搭配 KV cache；當長度超過 context 時，保留最後約 768 個 token（從 `Bar` 對齊處開始）作為新 context，重新計算 cache。
@@ -99,7 +110,37 @@ SI（Structureness Indicator，MusDr）：所有 .mid 都用同一個 renderer�
 - **溫度 / 取樣範圍**：較保守的取樣（a2：T=0.8, top-k 10）讓 H4 偏低、GS 偏高，代表音高集中、節奏過度重複。提高溫度並使用完整分布（a3：T=1.2）讓 H4 最接近真實資料，但 GS 明顯下降（0.81），代表節奏較不穩定。T=1.0 + top-p 0.95 介於兩者之間。
 - **模型 loss**：相同取樣設定下（a1/a4/a5），train loss 較低的模型（0.90、0.84）在 H4 上更接近真實資料，GS 也略為下降、更接近真實值。雖然 validation loss 在 9k 步之後上升，生成結果的統計特性反而更像訓練資料（可能是記憶訓練資料所致）。
 - **SI（結構性）**：保守取樣的 a2 SI 最高（0.55 / 0.55 / 0.48），遠高於真實資料（0.37 / 0.37 / 0.34）。這不代表結構較好，而是反映它重複同一段素材（與 GS 偏高、H4 偏低一致，也有少數樣本退化成密集重複音）。a3（T=1.2）SI 最低（0.30 / 0.26 / 0.20），長時間尺度幾乎沒有重複結構。T=1.0 + top-p 0.95 的 a1/a4/a5 最接近真實資料，其中 a5 的 short/mid/long 與真實值差距最小，a4 稍高但仍接近。
+- **取樣變異**：每組只有 20 首，指標本身的抽樣誤差不小。95% 信賴區間大約是 H1 ±0.07–0.15、H4 ±0.04–0.16、GS ±0.02，詳見下表。例如第 7 節的 `base`（step 9000 的 best-val checkpoint）與 a1（step 8855 的 loss_1.2 checkpoint）幾乎是同一個模型、取樣設定也相同，H1 卻分別是 2.22 與 2.11。因此差距在 ~0.1 以內的 H1/H4 不宜過度解讀；溫度造成的 GS 差異（a2 0.947 vs a3 0.815）則遠超過誤差。
+
+| 95% CI（20 首） | a1 | a2 | a3 | a4 | a5 |
+|---|---|---|---|---|---|
+| H1 | 2.109±0.123 | 2.036±0.152 | 2.024±0.093 | 2.163±0.073 | 2.068±0.089 |
+| H4 | 2.446±0.146 | 2.406±0.162 | 2.654±0.071 | 2.564±0.038 | 2.561±0.076 |
+| GS | 0.927±0.024 | 0.947±0.018 | 0.815±0.018 | 0.911±0.018 | 0.918±0.022 |
+
 - 綜合 H1/H4/GS 與真實資料的距離，**a4 最接近**，作為 listening samples（`outputs/task_a/a4_loss0.9_t1.0_p0.95/*.wav`，a1 也已轉成 wav）。
+
+![task a metrics](figs/task_a_metrics.png)
+
+### 4.1 是否在抄訓練資料？（memorization 分析）
+
+a4/a5 使用的是 overfit 之後的 checkpoint，因此檢查生成曲是否直接複製訓練資料（`code/analysis.py`，結果在 `results/memorization.csv`）：
+- 把每首曲子的音符依（onset, pitch）排序，轉成 (Δonset, Δpitch) 序列，所以移調後仍視為相同。
+- 統計生成曲的 n-gram 有多少比例在 880 首訓練曲中出現過。「all」是三軌合併的所有音符；「mel」是 skyline，也就是每個 onset 取最高音，約略等於主旋律。
+- 只有 1 種或少數幾種步伐重複的 n-gram（例如同一個音一直重複）不計入。
+- 對照組是 16 首沒用於訓練的真實歌曲的前 32 小節。
+
+| | all 10-gram 重複率 | all 最長重複（音數，平均 / 最大） | mel 8-gram 重複率 | mel 最長重複（平均 / 最大） |
+|---|---|---|---|---|
+| a1（loss 1.20） | 0.4% | 5.7 / 20 | 0.0% | 1.2 / 8 |
+| a2（T=0.8, k=10） | 0.5% | 4.5 / 14 | 0.1% | 1.2 / 8 |
+| a3（T=1.2） | 0.0% | 0 / 0 | 0.0% | 0 / 0 |
+| a4（loss 0.90） | 0.9% | 9.6 / 39 | 0.2% | 3.3 / 9 |
+| a5（loss 0.84） | 1.2% | 8.8 / 15 | 0.6% | 1.3 / 10 |
+| 真實歌曲（未見過） | 0.1% | 2.6 / 11 | 0.2% | 2.0 / 8 |
+
+- 20-gram 以上（約一小節以上的完整織體）的重複率在所有設定下都是 0%。主旋律最長的重複片段也只有 8–10 個音，與沒見過的真實歌曲相當，**沒有整段抄襲訓練資料**。
+- 但 overfit 越嚴重，短片段的重複率越高（a1 0.4% → a4 0.9% → a5 1.2%）。a4 最長有一段 39 個音（約兩小節的伴奏）與訓練資料相同。所以 a4/a5 的統計特性更接近真實資料，確實有一小部分來自記憶，但影響有限。
 
 ## 5. Basic Task b – Prompt Continuation（8 + 24 小節）
 
@@ -113,13 +154,40 @@ SI（Structureness Indicator，MusDr）：所有 .mid 都用同一個 renderer�
 
 輸出：`outputs/task_b/<config>/{001,002,003}.mid/.wav`
 
-**每個 prompt 的最佳設定：（TODO：請聆聽後填寫）**
+Prompt 內容：001 是 G 小調，只有 BRIDGE + PIANO 軌，沒有主旋律；002 是 A♭/E♭ 大調，三軌，速度較快；003 是 A 大調，MELODY + PIANO。
+
+**續寫的一致性分析**（`results/task_b_consistency.csv`）：比較 prompt（第 1–8 小節）與續寫部分（第 9–32 小節）
+- pitch-class 分布的 cosine 相似度；
+- 用 Krumhansl–Schmuckler 估計的調性；
+- 每小節音符數。
+
+對照組是 16 首真實歌曲的第 1–8 小節 vs 第 9–32 小節：cosine 平均 0.959（最低 0.887）、69% 前後同調、續寫段的音符密度平均是前 8 小節的 1.55 倍（歌曲開頭常是較稀疏的前奏）。
+
+| Prompt | Config | PC cosine | 調性（prompt → 續寫） | 音符數/小節（prompt → 續寫） |
+|---|---|---|---|---|
+| 001 | b1 | **0.969** | G:min → G:min | 16.0 → 26.3 |
+| 001 | b2 | 0.620 | G:min → G:min | 16.3 → 19.6 |
+| 001 | b3 | 0.915 | G:min → B♭:maj | 15.5 → **7.5** |
+| 002 | b1 | 0.966 | E♭:maj → E♭:maj | 20.3 → 18.3 |
+| 002 | b2 | **0.986** | E♭:maj → E♭:maj | 20.3 → 26.5 |
+| 002 | b3 | 0.810 | E♭:maj → B♭:maj | 20.3 → 17.5 |
+| 003 | b1 | **0.957** | A:maj → A:maj | 22.5 → 26.8 |
+| 003 | b2 | 0.954 | A:maj → E:maj | 22.5 → 26.4 |
+| 003 | b3 | 0.924 | A:maj → F♯:min | 22.5 → 27.9 |
+
+（prompt 的音符數在不同設定間略有差異，是因為模型可以在 prompt 第 8 小節剩下的位置補上音符。）
+
+- **b1（T=1.0, top-p 0.95）** 三首都維持 prompt 的調性，pitch-class 相似度 0.96–0.97，與真實歌曲的平均一致。
+- **b2（T=0.8, top-k 10）** 在 002 最貼近 prompt，但在 001 的音高分布明顯偏離（0.62），在 003 轉到屬調 E 大調。低溫時一旦走進某個模式就容易一直重複。
+- **b3（T=1.2）** 三首都轉到其他調（關係大小調或屬調），001 的續寫還變得非常稀疏（每小節 7.5 音，pitch-class 熵 1.47）。
+
+**每個 prompt 的最佳設定**（依上述指標選擇，建議再實際聆聽確認）：
 
 | Prompt | Best config | 理由 |
 |---|---|---|
-| 001 | | |
-| 002 | | |
-| 003 | | |
+| 001 | **b1** | 唯一同時維持 G 小調與 pitch-class 分布的設定；b2 音高偏離、b3 變稀疏 |
+| 002 | **b1** | 與 b2 都維持 E♭ 大調；b1 的音符密度與 prompt 較接近（b2 偏密） |
+| 003 | **b1** | 維持 A 大調；b2 轉到 E 大調，b3 轉到 F♯ 小調 |
 
 ## 6. Bonus – Accompaniment Generation
 
@@ -144,4 +212,54 @@ Bar TS_k Tempo_x Track_Mel  [Pos Chord? Pitch Vel Dur ...]  Track_Pno  [Pos Pitc
 - **最佳設定為 c2**（T=0.8, top-k 10）：CA 達到 ceiling（0.7625），Duration / IOI 的 OA 也最高。溫度越高，CA 越低、velocity OA 越高（力度分布較分散）。
 - 提交的 listening samples：`outputs/bonus/c2_t0.8_k10/*.wav`
 
-## 7. 結論 / 心得（TODO）
+## 7. Ablation Study
+
+每個 ablation 模型都使用與主模型相同的架構與 lr schedule（25k 步 cosine），並在 **第 9,000 步停止**，也就是主模型 validation loss 最低的地方。比較對象是主模型 step 9000 的 checkpoint（`base`）。取樣一律用 T=1.0、top-p 0.95（同 a1），每組 20 首 32 小節。程式在 `code/ablation.py`、`code/ablation_gen.py`、`code/midilike.py`；輸出在 `outputs/ablation/`。
+
+| Ablation | 改動 | val loss @9k | H1 | H4 | GS | all 10-gram 重複率 |
+|---|---|---|---|---|---|---|
+| **base** | REMI + Chord，移調增強，constrained decoding | 1.289 | 2.221±0.081 | 2.558±0.057 | 0.928±0.021 | 0.6% |
+| no constraint | 推論時關閉文法限制 | （同 base） | 2.244±0.110 | 2.635±0.043 | 0.920±0.027 | 0.4% |
+| REMI w/o Chord | 移除 Chord token | 1.280* | 2.123±0.084 | 2.469±0.104 | 0.936±0.025 | 0.6% |
+| MIDI-like | NoteOn / NoteOff / TimeShift / Vel，無 Bar / Pos / Chord | 1.437* | 1.911±0.173 | 2.180±0.212 | 0.883±0.041 | 4.9%† |
+| no augmentation | 不做隨機移調 | **1.523** | 2.050±0.090 | 2.562±0.068 | 0.912±0.020 | 2.5% |
+| Real data（前 32 小節） | | | 2.114 | 2.613 | 0.889 | 0.1% |
+
+\* 詞彙與序列不同，每個 token 的 loss 不能直接和 base 比較。
+† 主要來自一首退化的曲子（同一個和弦重複約 110 次），這種常見伴奏型自然會和訓練資料吻合；不計這首時為 0.3%，與 base 相近。
+
+**Tokenization：REMI vs MIDI-like**
+- MIDI-like 表示法用 `TimeShift_1..16`（16 分音符格）推進時間，以 `NoteOn/NoteOff` 表示音符，`Vel` 只在力度改變時出現。
+- 它沒有小節、拍點和和弦的概念。評估時把生成結果以 4/4 拍切成 32 小節，再轉回 REMI token 跑 `eval_basic.py`。
+- 編碼與解碼的 round-trip 在 896 首歌上完全一致（onset 與 pitch 0 差異）。序列長度其實比 REMI 短：平均 5,675 vs 6,049 tokens/首。
+- 但在相同訓練步數下，它的 H1/H4 明顯偏低（2.18 vs 2.56，真實 2.61），指標的變異也最大。
+- 20 首中有 2 首退化：一首幾乎全是同一個音的 16 分音符連打，另一首是同一個和弦重複上百次。
+- 推測原因有兩個。第一，模型必須自己數 TimeShift 的累積量才知道現在在小節的哪裡，不像 REMI 每個 Pos token 直接給出拍內位置。第二，NoteOn/NoteOff 必須配對，音符的時值要跨很多 token 才能確定。這和 REMI 論文（Huang & Yang, 2020）的觀察一致：明確的 Bar/Position 讓節奏結構更容易學。
+
+**Chord token（REMI w/ vs w/o Chord）**
+- 拿掉 Chord token 後，H4 從 2.558 降到 2.469（離真實的 2.613 更遠），GS 稍高。也就是 4 小節內的音高變化較少、節奏更重複。
+- 推測是因為和弦 token 讓模型明確地「換和弦」，帶動跨小節的音高變化。不過兩者的信賴區間部分重疊，這個差異屬於中等強度的證據。
+
+**資料增強（移調 ±6 半音）**
+- 不做移調時，相同步數下 train loss 低得多（0.955 vs 1.196），val loss 卻高很多（1.523 vs 1.289）。val loss 在第 7k 步就開始上升，overfit 明顯更早更嚴重。
+- 與訓練資料重複的 10-gram 比例從 0.6% 升到 2.5%，最長重複片段平均從 3 個音升到 12.6 個音。
+- 移調增強是這個資料量（880 首）下最重要的正則化手段。
+
+**Constrained decoding**
+- 關閉文法限制後，模型產生的 token 仍有 **99.98%** 符合文法，平均每首不到 1 個不合法 token；指標也都在誤差範圍內。
+- 表示模型已經學會 REMI 的語法，文法限制主要是避免偶發錯誤（例如 Pos 倒退、超出小節長度）的安全網，對音樂品質的影響很小。
+
+**Bonus：condition 中的和弦**（執行中）
+
+| Config | CA | OA_P | OA_V | OA_D | OA_IOI |
+|---|---|---|---|---|---|
+| 旋律 + 和弦（c2） | 0.7625 | 0.9008 | 0.5311 | 0.7261 | 0.5945 |
+| 只有旋律（無 Chord token） | TODO | | | | |
+
+## 8. 結論 / 心得
+
+1. **表示法**：以人工標註的拍點建立 16 分音符格線，再加上 Bar/Pos 與 Chord token 的 REMI 表示法，在相同模型與訓練步數下明顯優於沒有小節概念的 MIDI-like 表示法。和弦 token 對跨小節的音高變化有正面幫助。
+2. **訓練**：880 首的資料量下，26M 參數的模型約 9k 步就開始 overfit。移調增強大幅延後 overfit。繼續訓練（train loss 0.84–0.90）雖然讓統計指標更接近真實資料，但也增加了短片段的記憶；不過沒有整段抄襲。
+3. **取樣**：溫度與截斷方式對結果的影響大於 checkpoint 的選擇。T=0.8 + top-k 10 容易陷入重複，甚至退化（GS、SI 過高）；T=1.2 不截斷則節奏與結構散亂（GS、SI 過低）。T=1.0 + top-p 0.95 最接近真實資料，在 task b 也最能維持 prompt 的調性。
+4. **評估**：每組 20 首時指標本身的誤差約 ±0.1（H1/H4），比較時應考慮信賴區間。H/GS/SI 只反映統計特性：例如 a2 的 SI 最高，其實是過度重複；所以仍需要實際聆聽。
+5. **Bonus**：逐小節交錯（Option A）並在推論時強制插入條件，讓伴奏和旋律嚴格對齊。CA 達到評估程式的上限 0.7625；velocity 與 IOI 的分布（OA 0.53–0.59）則還有改進空間。

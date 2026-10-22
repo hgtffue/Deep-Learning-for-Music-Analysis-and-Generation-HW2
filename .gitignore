@@ -20,3 +20,6 @@ HW2_scripts/MusDr/
 .vscode/
 __pycache__/
 *.pyc
+
+# cloud-drive submission bundle (built by code/make_submission.py)
+submission/
