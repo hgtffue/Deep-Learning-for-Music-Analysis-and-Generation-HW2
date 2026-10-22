@@ -223,7 +223,7 @@ Bar TS_k Tempo_x Track_Mel  [Pos Chord? Pitch Vel Dur ...]  Track_Pno  [Pos Pitc
 | GT（經量化，上限參考） | | | | 0.7500 | 0.7625 | 1.0000 | 1.0000 | 0.9618 | 0.9989 |
 
 - **最佳設定為 c2**（T=0.8, top-k 10）：CA 達到 ceiling（0.7625），Duration / IOI 的 OA 也最高。溫度越高，CA 越低、velocity OA 越高（力度分布較分散）。
-- 雲端硬碟 `results/bonus/<prompt>/` 放 c1 / c2 / c3 三組結果（.mid + .wav），最佳為 c2。
+- 提交的 listening samples：`outputs/bonus/c2_t0.8_k10/*.wav`
 
 ## 7. Ablation Study
 
