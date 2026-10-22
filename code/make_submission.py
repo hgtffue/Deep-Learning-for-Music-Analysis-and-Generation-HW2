@@ -7,7 +7,7 @@ SUB = ROOT / "submission"
 
 TASK_A = "a4_loss0.9_t1.0_p0.95"                      # best inference configuration of task a
 TASK_B = ["b1_t1.0_p0.95", "b2_t0.8_k10", "b3_t1.2_p0.98"]
-BONUS = "c2_t0.8_k10"                                  # best bonus configuration
+BONUS = ["c1_t1.0_p0.9", "c2_t0.8_k10", "c3_t1.2_p0.95"]  # best: c2
 CKPTS = {"basic_loss0.9": "basic/loss_0.9",            # task a (a4)
          "basic_loss1.2": "basic/loss_1.2",            # task b
          "bonus": "bonus/best_val"}                    # bonus
@@ -30,9 +30,10 @@ for cfg in TASK_B:
     for f in sorted((ROOT / "outputs/task_b" / cfg).glob("*.*")):
         if f.suffix in (".mid", ".wav"):
             copy(f, SUB / "results/task_b" / f.stem / f"{cfg.split('_')[0]}{f.suffix}")
-for f in sorted((ROOT / "outputs/bonus" / BONUS).glob("*.*")):
-    if f.suffix in (".mid", ".wav"):
-        copy(f, SUB / "results/bonus" / f.name)
+for cfg in BONUS:
+    for f in sorted((ROOT / "outputs/bonus" / cfg).glob("*.*")):
+        if f.suffix in (".mid", ".wav"):
+            copy(f, SUB / "results/bonus" / f.stem / f"{cfg.split('_')[0]}{f.suffix}")
 copy(ROOT / "submission_README.md", SUB / "README.md")
 copy(ROOT / "requirements.txt", SUB / "requirements.txt")
 # third-party, not pip-installable: soundfont (MIT licence) + FluidSynth Windows build, for --wav rendering

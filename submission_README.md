@@ -18,7 +18,7 @@ tools/                   third-party files for .wav rendering only (FluidR3_GM.s
 results/                 the submitted generation results
   task_a/                20 × (.mid + .wav), 32 bars, best configuration: T=1.0, top-p 0.95
   task_b/<prompt>/       b1 / b2 / b3 .mid + .wav (8-bar prompt + 24 generated bars)
-  bonus/                 001–010 .mid + .wav: MELODY (given) + generated PIANO, 16 bars
+  bonus/<prompt>/        c1 / c2 / c3 .mid + .wav for 001–010: MELODY (given) + generated PIANO, 16 bars
 ```
 
 ## 1. Installation
@@ -87,9 +87,19 @@ python generate.py continue --ckpt ../checkpoints/basic_loss1.2 --prompt_dir <pa
 `--prompt_dir` contains one sub-folder per song with `melody.mid`, `beat_midi.txt`, `chord_midi.txt`
 (i.e. `POP909/prompts/bonus`). The output `.mid` has the given MELODY track and the generated PIANO track.
 
+The three configurations:
+
 ```
-python generate.py bonus --ckpt ../checkpoints/bonus --prompt_dir <path>/prompts/bonus --out ../out/bonus --temp 0.8 --top_k 10 --wav
+python generate.py bonus --ckpt ../checkpoints/bonus --prompt_dir <path>/prompts/bonus --out ../out/bonus/c1 --temp 1.0 --top_p 0.9 --wav
+python generate.py bonus --ckpt ../checkpoints/bonus --prompt_dir <path>/prompts/bonus --out ../out/bonus/c2 --temp 0.8 --top_k 10 --wav
+python generate.py bonus --ckpt ../checkpoints/bonus --prompt_dir <path>/prompts/bonus --out ../out/bonus/c3 --temp 1.2 --top_p 0.95 --wav
 ```
+
+| Config | Temperature | Top-k | Top-p |
+|---|---|---|---|
+| c1 | 1.0 | – | 0.9 |
+| **c2 (best, for all prompt songs)** | 0.8 | 10 | – |
+| c3 | 1.2 | – | 0.95 |
 
 If `--prompt_dir` is omitted, `POP909/prompts/basic-b` resp. `POP909/prompts/bonus` next to `code/` is used.
 
