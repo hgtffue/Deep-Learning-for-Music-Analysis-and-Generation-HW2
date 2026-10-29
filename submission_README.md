@@ -29,7 +29,7 @@ cd hw2
 pip install -r requirements.txt
 cd code
 python download.py                 # gdown: checkpoints/ and tools/ from this cloud folder -> repo root
-python demo.py --out ../demo_out   # listening samples: task a (2 pieces), task b (3 prompts, b1), bonus (10 songs, c2)
+python demo.py --out ../demo_out   # regenerates all results: task a (20, a4), task b (3 prompts × b1/b2/b3), bonus (10, c2)
 ```
 Python 3.13, CUDA GPU required. If pip installs a CPU-only PyTorch, install the CUDA build first:
 `pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cu128`.
